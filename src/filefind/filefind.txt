@@ -1,0 +1,30 @@
+filefind
+========
+
+filefind searches a directory tree for the file name specified. The
+file name can contain wildcards. For example
+
+  filefind c:\windows\*.txt
+
+searches c:\windows and all subdirectories for all files with the
+suffix .txt.
+
+The app always includes hidden and system files in the search.
+
+
+Flags
+-----
+
+-m<cutoff date>
+This only finds files that have been created or modified on or after
+the date specified e.g.
+
+  filefind -m01/01/2008 c:\windows\*.txt
+
+searches c:\windows and all subdirectories for all files with the
+suffix .txt and which have been modified on or after 1st Jan 2008.
+
+
+John Rennie
+john.rennie@ratsauce.co.uk
+29th March 2009

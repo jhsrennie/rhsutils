@@ -1,0 +1,33 @@
+1 DLGINCLUDE "czodbcdlg.h"
+
+INFOBOX DIALOG 32, 24, 160, 88
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "About CommandZ"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK", IDOK, 108, 56, 32, 16
+    LTEXT           "CommandZ is Courtesyware.  You are allowed to use it, copy it etc, but if you do then please drop me a line to say so.  I can be contacted via email as jrennie@cix.compulink.co.uk, or by snail-mail to", 
+                    -1, 4, 6, 152, 42
+    LTEXT           "John Rennie", -1, 10, 52, 42, 8
+    LTEXT           "18 Shaftesbury Avenue,", -1, 10, 60, 79, 8
+    LTEXT           "Chester.  CH3 5LQ", -1, 10, 68, 62, 8
+    LTEXT           "United Kingdom", -1, 10, 76, 52, 8
+END
+
+ABOUTBOX32 DIALOG IMPURE 8, 30, 148, 68
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+STYLE DS_MODALFRAME | WS_POPUP | WS_CLIPSIBLINGS | WS_CAPTION
+CAPTION "About CommandZ ODBC"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK", IDOK, 50, 48, 34, 14
+    LTEXT           "ODBC for CommandZ", -1, 34, 18, 106, 8, NOT WS_GROUP
+    CTEXT           "(c) Rattus Hacking Software, March '96", -1, 0, 32, 148, 
+                    8, NOT WS_GROUP
+    LTEXT           "CommandZ ODBC v1.3 for NT", -1, 34, 8, 89, 8, NOT 
+                    WS_GROUP
+    ICON            "RatIcon", -1, 16, 44, 18, 20
+    ICON            "CommandZIcon", -1, 8, 6, 18, 20
+    PUSHBUTTON      "&Info", IDCANCEL, 90, 48, 34, 14
+END

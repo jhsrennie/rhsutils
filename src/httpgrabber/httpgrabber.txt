@@ -1,0 +1,48 @@
+httpgrabber
+===========
+
+httpgrabber is an application that can send an HTTP GET request to a
+web server and display everything that is returned including all the
+headers. It's intended as a debugging tool to assist with problems
+using web services or some similar appl;ication on a web server. For
+example:
+
+  httpgrabber www.google.com /
+
+will open the URL http://www.google.com/ and display everything that
+gets sent back, headers and all.
+
+The syntax is:
+
+  httpgrabber <server> <path> [<output> [<username> <password>]]
+
+The <server> argument can include a port number if for some reason the
+web server is not listening on port 80. For eaxample:
+
+  httpgrabber www.unusualport.com:81 /
+
+opens the URL http://www.unusualport.com:81/. NB httpgrabber won't do
+SSL so while you could do:
+
+  httpgrabber www.secureserver.com:443 /
+
+It won't do an SSL transaction. It will attempt (and fail) a standard
+HTTP GET but on port 443.
+
+The <output> argument specifies a file to save the output to. If you
+omit this argument output is written to the console.
+
+For sites that use authentication you can supply <username> and
+<password> and httpgrabber will use basic authentication.
+
+If you need to supply a username and password but you still want output
+written to the console set <output> to . for example:
+
+  httpgrabber www.useauth.com / . fred bloggs
+
+will open http://fred:bloggs@www.useauth.com/ and will write the output
+to the console.
+
+John Rennie
+john.rennie@ratsauce.co.uk
+18th June 2009

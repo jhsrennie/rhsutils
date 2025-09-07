@@ -1,0 +1,62 @@
+SMTPUtil
+========
+
+SMTPUtil is an applet I wrote to help in diagnosing mail delivery
+problems.
+
+Syntax: smtputil <SMTP server>
+
+Enter the To: address, the From: address and the message text when
+prompted.
+
+If an SMTP server is not accepting or failing to deliver mail the
+only way to see exactly what is going on is to telnet into the server
+on port 25 and manually type the SMTP commands. However this is a
+somewhat tedious business, especially since if you press the wrong
+key you can't use backspace to delete the keystroke.
+
+SMTPUtil connects to the mail server then prompts you for the From:
+and TO: addresses and the message to send. At every stage it displays
+all the messages sent from the SMTP server so you see exactly what
+the errors are.
+
+As an example, suppose I try to send mail to fred@fred.com using the
+Microsoft mail server (not that I recommend this!). The results look
+like:
+
+  C:\>smtputil mx1.hotmail.com
+
+  Connecting to mx1.hotmail.com ...
+
+  <- 220 bay0-mc5-f17.bay0.hotmail.com Sending unsolicited commercial or
+  bulk e-mail to Microsoft's computer network is prohibited. Other
+  restrictions are found at http://privacy.msn.com/Anti-spam/.
+  Violations will result in use of equipment located in California and
+  other states. Thu, 30 Nov 2006 03:05:13 -0800
+
+  -> HELO quark
+  <- 250 bay0-mc5-f17.bay0.hotmail.com (3.3.0.21) Hello [81.174.235.81]
+
+  FROM address: john.rennie@ratsauce.co.uk
+  -> MAIL FROM: <john.rennie@ratsauce.co.uk>
+  <- 250 john.rennie@ratsauce.co.uk....Sender OK
+
+  TO address: fred@fred.com
+  -> RCPT TO: <fred@fred.com>
+  <- 550 Requested action not taken: mailbox unavailable
+  Server did not respond 250: aborting ...
+
+So in this case the mail is rejected and you can see exactly why.
+
+Changes:
+--------
+
+22/09/2012 v1.1
+Allows the subject line to be typed in.
+
+14/05/2013 v1.2
+Allows the subject line to be typed in.
+
+John Rennie
+john.rennie@ratsauce.co.uk
+14th May 2013

@@ -1,0 +1,53 @@
+dirspace
+========
+
+dirspace is a command line application that lists the total file size
+and the number of files in all subdirectories of a specified
+directory. For example:
+
+  dirspace c:\temp
+
+will go through every subdirectory in c:\temp and for each
+subdirectory it will list the total file ssize and number of files in
+the directory.
+
+The output is separated by tabs since it will usually be piped to a
+file and imported into a spreadsheet.
+
+Note that dirspace ignores NTFS junction points, so the sizes it
+calculates are the real space taken up on the disk.
+
+From v1.5 onwards dirspace is a UNICODE app so it can handle file
+names longer than 256 characters.
+
+
+Flags
+-----
+
+There are two flags:
+
+-i<wildcards>
+This only counts files that match the wildcard(s). So for example:
+
+  dirspace -i*.mp3 c:\docume~1
+
+is a quick way to see how many MP3s users have in their profiles. You
+can give up to 32 wildcards by separating them with , or ; so
+
+  dirspace -i*.mp3,*.mpg,*.mpeg c:\docume~1
+
+counts audio and video files.
+
+-m<cutoff date>
+This only counts files that have been created or modified on or after
+the date specified e.g.
+
+  dirspace -m01/01/2008 c:\docume~1
+
+will show 0 for any subdirectory that contains no files modified on
+or after 1st Jan 2008. This gives you a way to see which directories
+haven't been updated and could be archived.
+
+John Rennie
+john.rennie@ratsauce.co.uk
+29th March 2009

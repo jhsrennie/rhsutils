@@ -1,0 +1,49 @@
+ShowRegACL
+==========
+
+NB ShowRegACL will only run on Win2k and above as it handles
+inherited permissions and these are not supported on NT4 and below.
+
+This is a command line applet to show the access control list for
+a registry key and all it's subkeys. It was written to make it easy
+to inspect a registry tree and see what permissions have been granted.
+
+Syntax: ShowRegACL [-i -x<username>] <key name>
+
+e.g. ShowRegACL HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft
+
+By default inherited permissions are ignored. This makes the report
+much easier to read as it doesn't report subkeys that have the same
+permissions as their parent(s). If you want to see all the
+permissions use the -i flag e.g.
+
+ShowRegACL -i HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft
+
+Inherited permissions are distinguished with the suffix (I). Note
+that viewing inherited permissions will make the report very long if
+there are lots of subkeys in the directory tree, as in the example
+above.
+
+You can exclude usernames from the report with the -x flag and
+you can use this flag up to 16 times e.g.
+
+ShowRegACL -xadministrator -xsystem HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft
+
+will exclude any permissions for administrator and system.
+
+If the key has permissions that are not any of the standard read,
+write etc, then ShowRegAcl will display a somewhat unhelpful hex
+code. To decode this into specific permissions use the masks:
+
+KEY_QUERY_VALUE         (0x0001)
+KEY_SET_VALUE           (0x0002)
+KEY_CREATE_SUB_KEY      (0x0004)
+KEY_ENUMERATE_SUB_KEYS  (0x0008)
+KEY_NOTIFY              (0x0010)
+KEY_CREATE_LINK         (0x0020)
+
+Interested parties should note that these masks are defined in
+winnt.h.
+
+J. Rennie
+2nd July 2007

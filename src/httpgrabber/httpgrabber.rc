@@ -1,0 +1,44 @@
+////////////////////////////////////////////////////////////////////////
+// HttpGrabber: Resource file
+////////////////////////////////////////////////////////////////////////
+
+#include <windows.h>
+#include <CRhsIO/CRhsIOWnd.rc>
+
+
+////////////////////////////////////////////////////////////////////////
+// Version information
+////////////////////////////////////////////////////////////////////////
+
+#include "winver.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     1,1,0,0
+PRODUCTVERSION  1,1,0,0
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       0
+FILEOS          VOS_DOS_WINDOWS32
+FILETYPE        VFT_DLL
+FILESUBTYPE     0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "Comments",        "v1.1 adds support for POST requests\0"
+      VALUE "CompanyName",     "Rattus Hacking Software\0"
+      VALUE "FileDescription", "Grab data from an HTTP server\0"
+      VALUE "FileVersion",     "1.1\0"
+      VALUE "InternalName",    "HttpGrabber\0"
+      VALUE "LegalCopyright",  "(c) Rattus Hacking Software 2023\0"
+      VALUE "LegalTrademarks", "\0"
+      VALUE "OriginalFilename","httpgrabber.exe\0"
+      VALUE "ProductName",     "HttpGrabber\0"
+      VALUE "ProductVersion",  "1.1\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END

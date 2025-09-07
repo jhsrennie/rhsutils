@@ -1,0 +1,42 @@
+////////////////////////////////////////////////////////////////////////
+// smtputil: Resource file
+////////////////////////////////////////////////////////////////////////
+
+#include <windows.h>
+
+
+////////////////////////////////////////////////////////////////////////
+// Version information
+////////////////////////////////////////////////////////////////////////
+
+#include "winver.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     1,2,0,0
+PRODUCTVERSION  1,2,0,0
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       0
+FILEOS          VOS_DOS_WINDOWS32
+FILETYPE        VFT_DLL
+FILESUBTYPE     0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "Rattus Hacking Software\0"
+      VALUE "FileDescription", "SMTP protocol test utility\0"
+      VALUE "FileVersion", "1.2\0"
+      VALUE "InternalName", "smtputil\0"
+      VALUE "LegalCopyright", "Copyright © 2013 Rattus Hacking Software\0"
+      VALUE "OriginalFilename", "smtputil.exe\0"
+      VALUE "ProductName", "smtputil\0"
+      VALUE "ProductVersion", "1.2\0"
+      VALUE "Comments", "v1.2 allows the port to be entered\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END

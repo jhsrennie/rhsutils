@@ -1,0 +1,38 @@
+httpserver
+==========
+
+httpserver is an application that listens on a specified TCP/IP port
+and writes everything received on that port to the console.
+
+The syntax is:
+
+  httpserver [<port number, default = 80> [IP address]]
+
+For example:
+
+  httpserver
+
+listens on port 80 on the host's IP address. So if you now open
+Internet Explorer and type in the name of your computer httpserver will
+show the HTTP GET request sent by IE.
+
+To listen on a different port e.g. 666 use:
+
+  httpserver 666
+
+And if your PC has more than one IP address you can choose which one to
+listen on using:
+
+  httpserver 666 192.168.1.1 (or whatever your IP address is)
+
+The applet was written to help with debugging web services as it
+allowed me to see exactly what was being sent in an HTTP request. I've
+also used it to help with router NATing problems as it can simulate any
+TCP/IP server.
+
+The name httpserver is a bit of a misnomer since it will listen on any
+port, not just port 80.
+
+John Rennie
+john.rennie@ratsauce.co.uk
+18th June 2009

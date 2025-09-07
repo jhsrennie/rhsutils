@@ -1,0 +1,48 @@
+filecomp
+========
+
+filecomp compares files and directories. The syntax is:
+
+  filecomp [-a -d -h -q -s] <source file name> <dest file name>
+
+Examples:
+
+  filecomp anexample.txt anotherexample.txt
+
+just compares anexample.txt with anotherexample.txt. As a more complex
+example:
+
+  filecomp -d C:\MyFiles\*.txt D:\Backups\*.txt
+
+will search C:\MyFiles and all the subdirectories within it for files
+matching *.txt and it will compare them with the matching files in
+D:\Backups.
+
+
+Flags
+-----
+
+-a Files are ASCII not binary
+   If you specify -a filecomp will read the files line by line and
+   report the line number of the first difference. Without -a the files
+   are read byte by byte and the byte offset of the first difference is
+   reported.
+
+-d Recurse into subdirectories
+   Without -d filecomp will only find files in the target directory.
+   If -d is specified it will search all subdirectories below the
+   current directory.
+
+-h Compare hidden files
+   Without -h hidden files are ignored
+
+-q Quiet mode
+   Don't print a list of files compared
+
+-s Compare system files
+   Without -s system files are ignored
+
+
+John Rennie
+john.rennie@ratsauce.co.uk
+13th October 2009

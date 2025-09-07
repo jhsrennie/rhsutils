@@ -1,0 +1,67 @@
+filerename
+==========
+
+filerename renames files and directories. It differs from the Windows
+rename command because it handles wildcards properly. The syntax is:
+
+  filerename [-d -h -q -r -s] <old file name> <new file name>
+
+The <old file name> may be a fully qualified name or it may cantain only
+a partial path or no path. If it isn't a fully qualified name the path
+is relative to whatever the current directory is.
+
+Note that the <new file name> may not contain a path. Files can only be
+renamed to the same directory as the original file.
+
+Examples:
+
+  filerename anexample.txt anotherexample.txt
+
+just renames anexample.txt to anotherexample.txt as the Windows rename
+command does. For a more complicated example suppose we have a folder
+containing the files:
+
+  01 - Relics - Arnold Layne.mp3
+  02 - Relics - Interstellar Overdrive.mp3
+  etc
+
+and you want to remove the album name "Relics - " then
+
+  filerename "* - Relics - *.mp3" "* *.mp3"
+
+will rename the files to:
+
+  01 Arnold Layne.mp3
+  02 Interstellar Overdrive.mp3
+  etc
+
+and to rename them back again you could use:
+
+  filerename "* *.mp3" "* - Relics - *.mp3
+
+Flags
+-----
+
+-d Recurse into subdirectories
+   Without -d filerename will only find files in the target directory.
+   If -d is specified it will search all subdirectories below the
+   current directory.
+
+-h Rename hidden files
+   Without -h hidden files are ignored
+
+-q Quiet mode
+   Don't print a list of files renamed
+
+-r Report mode
+   Print a list of files that would be renamed but don't actually
+   rename them. Useful for checking that a complicated wildcard rename
+   will do what you actually think it will do.
+
+-s Rename system files
+   Without -s system files are ignored
+
+
+John Rennie
+john.rennie@ratsauce.co.uk
+13th October 2009

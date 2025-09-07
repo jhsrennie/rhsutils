@@ -1,0 +1,17 @@
+SMTPSendFile
+============
+
+SMTPSendFile is an app to send an RFC822 formatted file to an SMTP
+server. The idea is that if you have a text file of the e-mail you can
+use this app to inject it directly into an SMTP server.
+
+smtpsendfile <SMTP server> <to> <from> <filename>
+
+It just sends the file "as is" with no extra info or formatting.
+
+This was somewhat hastily written so the error checking is a little
+sparse. One day I might revisit it to improve it.
+
+John Rennie
+johnhsrennie@gmail.com
+29th Sep 2024

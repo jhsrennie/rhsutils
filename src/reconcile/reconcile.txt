@@ -1,0 +1,121 @@
+Reconcile
+=========
+
+Reconcile is a program to keep the contents of two drives and/or
+directories the same.  The syntax is:
+
+reconcile [-x -u -d -t -q -r -e -f -a<dir>] <source> <dest>
+
+-x: Any files on the source but not on the destination are copied
+    from the source to the destination.
+
+-u: Any files present on the destination dated earlier than the
+    same file on the source are copied from the source to the
+    destination.
+
+-d: Any files on the destination but not on the source are deleted.
+
+-t: Time stamps of destation files are changed to match the times of
+    the source files.
+
+-q: Suppress listing of operations
+
+-r: List operations but do not actually do anything.  This option
+    is useful for comparing drives/directories.
+
+-e: Normally any errors are fatal.  The -e option allows processing
+    to continue even if errors occur.
+
+-f: Use NTFS file date times, i.e. compare times to 1 second
+    resolution.  The default is the 2 second resolution of FAT.
+
+-a: Destination files are moved to an archive before being overwritten
+    or deleted. See notes below.
+
+The program produces output consisting of one line per file action.
+The lines start with X, U, D or E for -x, -u, -d actions or errors
+so a pattern matching utility can be used to sift through the
+output.
+
+This code has not been comprehensively tested and comes with no form
+of warranty.  However I use it myself and it has always served me
+well.
+
+Archive flag
+------------
+
+From v1.3 reconcile has an option to archive files from the
+destination directory before they are overwritten. For example:
+
+reconcile -u c:\data d:\data
+
+will replace files in d:\data is the file in c:\data is newer. The
+previous versions of the files in d:\data are lost. However the -a
+flag can be used to specify an archive directory e.g.
+
+reconcile -u -ad:\archive c:\data d:\data
+
+In this case, before any file in d:\data is overwritten the
+previous version is copied from d:\data into d:\archive. The
+directory structure is preserved, so in the example above, if the
+file d:\data\accounts\current\costs.xls is being overwritten by a
+later version from c:\data the previous version is copied into
+d:\archive\accounts\current\costs.xls.
+
+To be really useful you need a different archive directory for each
+time reconcile is run. One way of doing this from a batch file is:
+
+for /f "tokens=1" %%i in ('date /t') do set ARCHIVE=%%i
+set ARCHIVE=d:\archive\%ARCHIVE:~6,4%-%ARCHIVE:~3,2%-%ARCHIVE:~0,2%
+md %ARCHIVE%
+reconcile -u -a%ARCHIVE% c:\data d:\data
+
+So if you run this on the first of April (01/04/2008) the files
+will be archived to d:\archive\20080401\. On the second of April
+they will be archived to d:\archive\20080402\ and so on. The net
+result is that you will be able to recover previous versions of
+files until you manually delete the old archives.
+
+Long file names
+---------------
+
+From v1.4 reconcile is a UNICODE application. This means you can
+specify file names as:
+
+  \\?\c:\somepath\somefile.txt
+
+or
+
+  \\?\UNC\server\share\somepath\somefile.txt
+
+for drive letter and UNC names respectively. Using this syntax for
+the file names bypasses the 256 character limit on file names.
+
+Changes
+-------
+
+18th July 08: v1.4 Converted to UNICODE. Also combined the update and
+create operations into a single pass to improve speed.
+
+28th March 08: v1.3 Added the archive facility.
+
+25th June 07: v 1.2 Modified the error trapping on the Delete
+function. Previously a network dropout in the middle of a Delete
+could cause reconcile to interpret the network error as file/path not
+found, and it would delete everything from the target. Network errors
+such as 53 (ERROR_BAD_NETPATH) now cause Delete to exit immediately.
+
+Also use the Win32 Copyfile call instead of rolling my own. This
+means NTFS streams are now correctly copied.
+
+7th Aug 05: Use CreateFileW for file operations to support file names
+up to 2048 characters long.
+
+2nd Feb 99: Changed error logging to stderr and added Windows error
+messages to output.  Modified ReconcileCopyFile and
+Get/SetFileTimeByName to change file sharing to read and write.
+
+
+John Rennie
+john.rennie@ratsauce.co.uk
+28th March 2008

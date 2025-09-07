@@ -1,0 +1,43 @@
+////////////////////////////////////////////////////////////////////////
+// pop3util: Resource file
+////////////////////////////////////////////////////////////////////////
+
+#include <windows.h>
+
+
+////////////////////////////////////////////////////////////////////////
+// Version information
+////////////////////////////////////////////////////////////////////////
+
+#include "winver.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     1,1,1,0
+PRODUCTVERSION  1,1,1,0
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       0
+FILEOS          VOS_DOS_WINDOWS32
+FILETYPE        VFT_DLL
+FILESUBTYPE     0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName",     "Rattus Hacking Software\0"
+      VALUE "FileDescription", "POP3 mailbox tool\0"
+      VALUE "FileVersion",     "1.1.1\0"
+      VALUE "InternalName",    "pop3util\0"
+      VALUE "LegalCopyright",  "(c) Rattus Hacking Software 2009-2018\0"
+      VALUE "LegalTrademarks", "\0"
+      VALUE "OriginalFilename","pop3util.exe\0"
+      VALUE "ProductName",     "pop3util\0"
+      VALUE "ProductVersion",  "1.1.1\0"
+      VALUE "Comments",        "Connect/view/download/delete from a POP3 server\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END

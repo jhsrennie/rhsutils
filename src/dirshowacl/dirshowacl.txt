@@ -1,0 +1,35 @@
+dirshowacl
+==========
+
+NB dirshowacl will only run on Win2k and above as it handles
+inherited permissions and these are not supported on NT4 and below.
+
+This is a command line applet to show the access control list for
+a directory and all it's subdirectories. It was written to make it easy
+to inspect a directory tree and see what permissions have been granted.
+
+Syntax: dirshowacl [-i -x<username>] <directory name>
+
+e.g. dirshowacl c:\
+
+By default inherited permissions are ignored. This makes the report
+much easier to read as it doesn't report subdirectories that have the
+same permissions as their parent(s). If you want to see all the
+permissions use the -i flag e.g.
+
+dirshowacl -i c:\
+
+Inherited permissions are distinguished with the suffix (I). Note that
+viewing inherited permissions will make the report very long if there
+are lots of subdirectories in the directory tree, as in the example
+above.
+
+You can exclude usernames from the report with the -x flag and
+you can use this flag up to 16 times e.g.
+
+dirshowacl -xadministrator -xsystem c:\
+
+will exclude any permissions for administrator and system.
+
+J. Rennie
+20th May 2009

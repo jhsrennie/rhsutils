@@ -1,2 +1,5 @@
-# rhsutils
-Miscellaneous Windows utilities
+Like many hard pressed sysadmins, over the years I have written a number of applets to help me with my network management. I've collected them together and I'm putting them on Sourceforge in the hope that they will be useful to others. I'm sure many of these apps have been independantly invented many times, and I'm not claiming that my versions are better than anyone elses. However all of these apps I use on a daily basis and they've all been tested over many years.
+
+The apps are all command line, but because I've got fed up of scrolling command windows up and down some of the apps accept a flag "--gui" that makes them create a window and send the output to the window instead of the command line. See the app source for a readme file that gives a detailed description of the app.
+
+The apps that might run into long filename problems are UNICODE and will accept the \\?\ prefix to allow filenames longer than 260 characters.

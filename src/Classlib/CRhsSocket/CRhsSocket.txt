@@ -1,0 +1,219 @@
+CRhsSocket
+==========
+
+This is a C++ class to wrap the sockets functions.  It's designed to
+be as lightweight and efficient as possible whilst making sockets
+easy to use.  I don't guarantee it to be bug free, but I've used it
+in many apps with no problems.
+
+The class consists of just two files, rhssock.cpp and rhssock.h.
+These will compile on both 16 and 32 bit Windows.
+
+
+Using the class
+---------------
+
+Just declare the CRhsSocket statically or with new like any other
+variable.  The constructor takes no arguments.  Before using any
+sockets functions the Windows Sockets library has to be initialised
+and you can call the Startup() method from any CRhsSocket to do this.
+Similarly, call the Cleanup() method when you've finished.
+
+A CRhsSocket connection can be made as simply as:
+
+  CRhsSocket s;
+  s.Startup();
+  s.Connect("someserver.com", port_number);
+  s.printf("somecommand\n");           // or one of the other output methods
+  s.gets(astring, sizeof(astring)-1);  // or one of the other input methods
+  s.CloseSocket();
+  s.Cleanup();
+
+Alternatively you can control binding etc in some detail.  The
+methods you can use are described below.  I have included a simple
+HTTP 1.0 grabber as an example.  If you find any errors in the code
+please mail me and I'll fix them.
+
+
+Initialisation
+--------------
+
+BOOL Startup(void);
+void Cleanup(void);
+
+ Startup() is called once per program to initialise the WinSock
+ library and Cleanup() is called once per program when you're
+ finished.
+
+
+Connection methods
+------------------
+
+BOOL Connect(char* Peer, int PeerPort, char* Host = NULL, int HostPort = 0);
+
+ Connect to a server (the Peer) on the port specified.  You can
+ optionally give your internet name and the port for your side of the
+ connection, or omit them to use the defaults.
+
+BOOL Listen(char* Host, int Port);
+CRhsSocket* Accept(char* Peer, int MaxLen);
+
+ Listen starts listening for connections on the port you specify.
+ Call the Accept method to wait for a connection.  This returns a new
+ CRhsSocket for the accepted connection.  The original CRhsSocket is
+ still valid so you can use it to call Accept again.
+
+BOOL CloseSocket(void);
+
+ This method terminates a connection and frees up the resources
+ allocated to it.  Having called this you need to call Connect again
+ to do any more i/o using the socket.
+
+inline SOCKET Socket(void) { return(m_Socket); }
+
+ Get the socket so you can use sockets functions directly.
+
+
+I/O Methods
+-----------
+
+These should hopefully be self evident, as far as possible I've
+matched the behaviour of the corresponding stdio.h functions.
+
+int printf(const char* Format, ...);
+
+char* gets(char* Data, int MaxLen);
+BOOL  puts(const char* Data);
+
+char sgetc(void);
+char sputc(char c);
+
+int read(void* Data, size_t Size, size_t NumObj);
+int write(const void* Data, size_t Size, size_t NumObj);
+
+int recv(char* buf, int len, int flags);
+int send(const char* buf, int len, int flags);
+
+ The flags arguments can take the same values as for the
+ corresponding sockets functions.
+
+
+Timeout functions
+-----------------
+
+int select(BOOL Read = TRUE, BOOL Write = FALSE, BOOL Error = FALSE, DWORD Timeout = 0);
+
+ This wraps the sockets select call.  Setting any of Read, Write or
+ Error to TRUE checks for data waiting to read or written or any
+ errors on the socket.  You can specify a timeout which is in milli-
+ seconds.  The defaults are set so that select() checks for data
+ waiting to be read; this is likely to be the most common use.  The
+ method returns 0 if there is no data or errors, and non-zero if
+ there is data or errors.
+ 
+ e.g.
+ 
+ select() or select(TRUE) - returns non-zero if there is data waiting
+ to be read.
+ 
+ select(FALSE, TRUE) - returns non-zero if data is waiting in the
+ output buffer to be written.
+ 
+ select(TRUE, TRUE) - returns non-zero if either there is data
+ waiting to be read or there is data in the output queue waiting to
+ be written.
+
+int ReadTimeout(char* buf, int len, int flags);
+int WriteTimeout(const char* buf, int len, int flags);
+
+ The socket i/o functions normally block.  On NT and 95 but not on
+ W3.1 you can use these two functions which allow a timeout.  These
+ use asynchronous i/o to manage the timeout which is why they won't
+ work on W3.1.  The flags arguments can take the same values as for
+ the corresponding sockets functions.
+
+inline void Timeout(DWORD t) { m_Timeout = t; }
+inline DWORD Timeout(void) { return(m_Timeout); }
+
+ These functions set and get the timeout in miliseconds.
+
+
+Miscellaneous
+-------------
+
+Normally you can connect a socket just using the Connect or
+Listen/Accept methods.  These call the methods below to create
+and bind the socket etc.  However you can call the methods yourself
+if you wish to.
+
+BOOL BindSocket(char* Host, int Port);
+
+ Bind a socket using the internet name and port supplied.
+
+BOOL BindInRange(char* Host, int Low, int High, int Retries);
+
+ The same as BindSocket, except that this function will retry the
+ bind operation if it fails.  This is a convenient way of finding a
+ free port when some of the port numbers you might try are in use.
+ NB if Retries is less than the range Low to High then random port
+ numbers in the range will be tried.  If Retries is less than
+ High-Low then each port in the range Low to High will be tried in
+ order.
+
+    BOOL Linger(BOOL LingerOn, int LingerTime = 0);
+
+ Set the linger option.
+
+    BOOL CreateSocket(DWORD Type);
+
+ Create the socket.  Type can be omitted in which case a TCP socket
+ is created.  To create a socket for UDP set Type to SOCK_DGRAM.
+
+    BOOL SetPeer(char* Peer, int Port);
+    BOOL GetPeer(char* Peer, int MaxLen, int* Port);
+    BOOL SetHost(char* Host, int Port);
+    BOOL GetHost(char* Host, int MaxLen, int* Port);
+
+ Set and get the Peer name and port (the Peer is the computer you are
+ connecting to) and the Host name and port (that's you).
+
+
+Error Functions
+---------------
+
+char*  GetLastErrorMessage(char* Error, int MaxLen);
+
+ Get a text string corresponding to the last error.
+
+inline DWORD GetLastError(void) { return(m_LastError); }
+
+ Get the last error code.
+
+
+Changes
+-------
+
+20th June 1999
+Modified CreateSocket so it takes the socket type as an argument.  If
+the type is omitted SOCK_STREAM is assumed, so the change does not
+affect existing code.  SOCK_DGRAM is the only other option.
+
+16th April 1998
+Fixed mistaken reference to m_ReadOverlapped in the WriteTimeout method.
+
+1st April 1998
+Added Shutdown and Bind methods, BindSocket is now deprecated.  Modified
+CloseSocket to reset all internal variables.
+
+17th October 1997
+Modified the constructor to initialise unused fields of the two
+OVERLAPPED structures to zero.  This cured "Invalid parameter" errors
+using overlapped i/o to implement timeouts.
+
+24th August 1999
+Added the select method.
+
+
+John Rennie
+jrennie@cix.compulink.co.uk
+16st April 1998

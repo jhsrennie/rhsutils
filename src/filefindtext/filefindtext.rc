@@ -1,0 +1,44 @@
+////////////////////////////////////////////////////////////////////////
+// filefindtext: Resource file
+////////////////////////////////////////////////////////////////////////
+
+#include <windows.h>
+#include <CRhsIO/CRhsIOWnd.rc>
+
+
+////////////////////////////////////////////////////////////////////////
+// Version information
+////////////////////////////////////////////////////////////////////////
+
+#include "winver.h"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION     1,2,5,0
+PRODUCTVERSION  1,2,5,0
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       0
+FILEOS          VOS_DOS_WINDOWS32
+FILETYPE        VFT_DLL
+FILESUBTYPE     0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName",     "Rattus Hacking Software\0"
+      VALUE "FileDescription", "Find text in files\0"
+      VALUE "FileVersion",     "1.2.5\0"
+      VALUE "InternalName",    "filefindtext\0"
+      VALUE "LegalCopyright",  "(c) Rattus Hacking Software 2023\0"
+      VALUE "LegalTrademarks", "\0"
+      VALUE "OriginalFilename","filefindtext.exe\0"
+      VALUE "ProductName",     "filefindtext\0"
+      VALUE "ProductVersion",  "1.2.5\0"
+      VALUE "Comments",        "v1.2.5 adds . as a wildcard\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END

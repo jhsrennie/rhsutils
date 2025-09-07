@@ -1,0 +1,28 @@
+diskinfo
+========
+
+diskinfo lists disks, partitions etc. It is intended to help convert
+the various disk references in event logs to something more useful.
+
+
+Background info
+---------------
+
+Each hard disk is referred to as /Device/HarddiskN, where N is a
+number starting at 0 for the first disk.
+
+For each disk, there is a name \Device\HarddiskN\Partition0 that refers
+to the whole disk. From Windows 2000 onwards this name is a symbolic
+link to \Device\HarddiskN\DRX (N and X are not necessarily the smae
+number).
+
+For each disk the partitions are named \Device\HarddiskN\Partition1 to
+\Device\Harddisk0\PartitionY.
+
+Logical disks are named \\?\Volume{GUID}. This name is a symbolic link
+to a volume name like \Device\HarddiskVolumeN. The volume will usually
+be mounted either as a drive letter or a path.
+
+John Rennie
+john.rennie@ratsauce.co.uk
+19th December 2009

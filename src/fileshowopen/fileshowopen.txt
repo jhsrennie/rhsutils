@@ -1,0 +1,50 @@
+fileshowopen
+============
+
+fileshowopen is a tool for checking which files on a server have been
+opened over the network, and optionally closing the files. The syntax
+is:
+
+fileshowopen [<server> [<path> [<user> [<close|closeread|closeall>]]]]
+
+server - the name of the server to inspect. You do not have to be
+         logged on at the server, instead the app can be run from a
+         workstation and will inspect the server over the network.
+         However you do need Administrator or Account Operator rights
+         on the server. If you omit the server name the default is
+         the computer you run the app on.
+
+path -   if you supply a path then only open files in the path will
+         be shown
+
+user -   if you supply a username then only files opened by the user
+         will be shown
+
+The final argument allows you to close files. If you set this to
+"close" then you will be prompted to close each file. Note that you
+cannot use the "close" option if you're running fileshowopen a a GUI app
+because the GUI app has no way of prompting you to confirm the close
+operation.
+
+If you set the final argument to "closeread" then all files opened only
+for read access will be closed WITHOUT PROMPTING. If you set the last
+argument to "closeall" then all files will be closed WITHOUT PROMPTING.
+closeread and closeall can be used from a scheduled batch file as they
+require no user intervention.
+
+Note that closing a file may result in data loss or corruption as it
+closes the file on the server without first notifying the network
+client.
+
+If you want to supply a second, third or fourth argument while
+leaving preceding arguments at the default then just set the
+preceeding arguments to "." e.g.
+
+fileshowopen . . . closeall
+
+closes all files on the current computer for all paths and all users.
+
+
+John Rennie
+john.rennie@ratsauce.co.uk
+20th May 2009

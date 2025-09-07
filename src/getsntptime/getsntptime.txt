@@ -1,0 +1,49 @@
+getsntptime
+===========
+
+getsntptime is a simple command line app to get the time from an SNTP
+time server and set the system time accordingly.  There are lots of
+time synchronising apps around but I have found no simple command
+line versions that you can run from a batch file using the scheduler,
+or at least no free ones.
+
+To use the app just run it with the name of an SNTP server, e.g.
+
+  getsntptime ntp0.pipex.net
+
+You can optionally specify the maximum number of seconds to change,
+e.g.
+
+  getsntptime ntp0.pipex.net 60
+
+will not change the time unless the change is less than 60 seconds.
+This helps guard against rogue times.
+
+getsntptime is entirely free and you may use and distribute it as you
+wish.
+
+
+IMPORTANT
+---------
+
+getsntptime will not work with date/times before 00:00 1st Jan 1999.
+
+SNTP servers give you number of seconds since 00:00 1st Jan 1900 and
+you use the number of seconds to work out the current date and time.
+However I dodn't know how many leap seconds there have been since
+then and without this knowledge cannot calculate the time precisely.
+To get round this I back calculated the number of seconds until
+00:00 1st Jan 1999 (3124137600 seconds) and in my getsntptime app all
+times are calculated relative to this.  This means that the app
+cannot handle any date/times earlier than 00:00 1/1/1999, but
+this shouldn't be a problem as no SNTP server will ever return a
+date earlier than this.
+
+Incidently my app will start getting the times wrong the next time a
+leap second is inserted into the calender.  If anyone knows how to
+allow for the leap seconds please tell me!
+
+
+John Rennie
+john.rennie@ratsauce.co.uk
+18th June 2009

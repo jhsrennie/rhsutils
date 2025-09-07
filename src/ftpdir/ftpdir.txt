@@ -1,0 +1,20 @@
+FtpDir
+======
+
+FtpDir is similar to the MS-DOS dir command except that it lists files
+on an ftp server.  The syntax is:
+
+ftpdir [-d -p<proxy>] <server> <search expr> [<username> <password>]
+
+The -d flag causes the directory listing to recurse into
+subdirectories and the -p flag allows you to use a proxy server.  For
+example:
+
+ftpdir -d -pmyproxy.com ftp.microsoft.com /*
+
+will list every file on the Microsoft ftp server using the proxy
+server myproxy.com.
+
+John Rennie
+john.rennie@ratsauce.co.uk
+18th June 2009

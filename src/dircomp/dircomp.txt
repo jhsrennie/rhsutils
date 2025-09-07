@@ -1,0 +1,32 @@
+dircomp
+========
+
+dircomp compares two directories.
+
+The syntax is:
+
+  dircomp [-d -v0/1/2] <source dir> <destination dir>
+
+For example
+
+  dircomp d:\mydata \\myserver\myshare\mydata
+
+compares the local directory D:\mydata with the directory mydata on the
+network share \\myserver\myshare.
+
+The app always includes hidden and system files in the search.
+
+
+Flags
+-----
+
+-d  recurse into subdirectories
+
+-v0 don't print file or directory names
+-v1 print the names of subdirectories being compared
+-v2 print the names of subdirectories and files being compared
+
+
+John Rennie
+john.rennie@ratsauce.co.uk
+23rd November 2009
