@@ -120,7 +120,7 @@ CRhsIO RhsIO;
 #define LEN_HELP 37
 static const WCHAR* HELP[LEN_HELP] =
 {
-  L"Reconcile v1.0.2\r\n",
+  L"Reconcile v1.0.3\r\n",
   L"----------------\r\n",
   L"Reconcile is a program to keep the contents of two drives and/or\r\n",
   L"directories the same.  The syntax is:\r\n",
@@ -725,6 +725,10 @@ BOOL ReconcileDeleteFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINF
 
 
 //**********************************************************************
+// ReconcileTimeStampFiles
+// -----------------------
+// Update the timestamps of files in the destination to match the
+// source
 //**********************************************************************
 
 BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
@@ -793,7 +797,17 @@ BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
           RhsIO.printf(L"T %s %s %i/%i/%i %02i:%02i:%02i\r\n", file1, file2, fdate1.wDay, fdate1.wMonth, fdate1.wYear%100, fdate1.wHour, fdate1.wMinute, fdate1.wSecond);
 
         if (!RInfo->Report)
-        { if (!SetFileTimeByName(file2, NULL, NULL, &fdate1))
+        { // If the destination is read-only we need to make it writeable
+          DWORD file2attr = GetFileAttributes(file2);
+          if (file2attr & FILE_ATTRIBUTE_READONLY)
+             SetFileAttributes(file2, 0);
+          // Change the timestamp
+          BOOL b = SetFileTimeByName(file2, NULL, NULL, &fdate1);
+          // If the file was read-only change the attributes back
+          if (file2attr & FILE_ATTRIBUTE_READONLY)
+             SetFileAttributes(file2, file2attr);
+          // If the timestamp change failed report thw error
+          if (!b)
           { if (!RInfo->Quiet)
               RhsIO.errprintf(L"E Cannot timestamp %s to match %s: %s\r\n", file2, file1, GetLastErrorMessage());
 

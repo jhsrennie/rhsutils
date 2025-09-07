@@ -13,8 +13,8 @@
 #include "winver.h"
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION     1,0,2,0
-PRODUCTVERSION  1,0,2,0
+FILEVERSION     1,0,3,0
+PRODUCTVERSION  1,0,3,0
 FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
 FILEFLAGS       0
 FILEOS          VOS_DOS_WINDOWS32
@@ -27,14 +27,14 @@ BEGIN
     BEGIN
       VALUE "CompanyName",     "Rattus Hacking Software\0"
       VALUE "FileDescription", "Reconcile two directories to make them identical\0"
-      VALUE "FileVersion",     "1.0.2\0"
+      VALUE "FileVersion",     "1.0.3\0"
       VALUE "InternalName",    "Reconcile\0"
-      VALUE "LegalCopyright",  "(c) Rattus Hacking Software 2021\0"
+      VALUE "LegalCopyright",  "(c) Rattus Hacking Software 2025\0"
       VALUE "LegalTrademarks", "\0"
       VALUE "OriginalFilename","reconcile.exe\0"
       VALUE "ProductName",     "Reconcile\0"
-      VALUE "ProductVersion",  "1.0.2\0"
-      VALUE "Comments",        "64 bit version\0"
+      VALUE "ProductVersion",  "1.0.3\0"
+      VALUE "Comments",        "Fix bug setting timestamps of read-only files\0"
     END
   END
   BLOCK "VarFileInfo"
