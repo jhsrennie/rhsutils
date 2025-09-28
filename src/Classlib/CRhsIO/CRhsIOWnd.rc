@@ -22,6 +22,8 @@ RhsIOAccel ACCELERATORS
 BEGIN
   "^S", IDM_FILE_SAVEAS
   "^F", IDM_EDIT_FIND
+  "F",  IDM_POPUP_SEARCH, CONTROL,SHIFT,VIRTKEY,NOINVERT
+  "U",  IDM_POPUP_URL, CONTROL,VIRTKEY,NOINVERT
 END
 
 ////////////////////////////////////////////////////////////////////////

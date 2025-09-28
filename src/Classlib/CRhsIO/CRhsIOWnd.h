@@ -22,3 +22,7 @@
 #define IDM_EDIT_FIND    310
 
 #define IDM_OPTIONS_FONT 320
+
+#define IDM_POPUP_COPY   330
+#define IDM_POPUP_SEARCH 331
+#define IDM_POPUP_URL    332

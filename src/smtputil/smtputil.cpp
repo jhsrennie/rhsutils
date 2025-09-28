@@ -47,7 +47,8 @@ BOOL strtoint(const char* s, int* i);
 
 CRhsSocket smtp;
 
-char mail_from[256], rcpt_to[256], subject[256];
+#define LEN_BUF 256
+char mail_from[LEN_BUF], rcpt_to[LEN_BUF], subject[LEN_BUF];
 
 
 //**********************************************************************
@@ -191,7 +192,7 @@ BOOL MailFrom(void)
 
   printf("\n");
   printf("FROM address: ");
-  gets(mail_from);
+  fgets(mail_from, LEN_BUF, stdin);
 
   if (strlen(mail_from) == 0)
   { printf("No FROM address: aborting...\n");
@@ -231,7 +232,7 @@ BOOL RcptTo(void)
 
   printf("\n");
   printf("TO address: ");
-  gets(rcpt_to);
+  fgets(rcpt_to, LEN_BUF, stdin);
 
   if (strlen(rcpt_to) == 0)
   { printf("No TO address: aborting...\n");
@@ -271,10 +272,10 @@ BOOL Subject(void)
 
   printf("\n");
   printf("Subject: ");
-  gets(subject);
+  fgets(subject, LEN_BUF, stdin);
 
   if (strlen(subject) == 0)
-    strcpy(subject, "SMTPUtil test mail");
+    lstrcpy(subject, "SMTPUtil test mail");
 
 // All done
 
@@ -331,7 +332,7 @@ BOOL Data(void)
 
   for(;;)
   { printf("-> ");
-    gets(s);
+    fgets(s, 1024, stdin);
     smtp.printf("%s\r\n", s);
 
     if (strcmp(s, ".") == 0)

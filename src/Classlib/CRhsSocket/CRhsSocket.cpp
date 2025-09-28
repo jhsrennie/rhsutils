@@ -1,40 +1,11 @@
 //**********************************************************************
 // CRhsSocket
 // ==========
-//
 // C++ class to encapsulate a WinSock socket
-//
-// J. Rennie
-// john.rennie@ratsauce.co.uk
-// 16th April 1998
 //**********************************************************************
-
-#ifndef STRICT
-#define STRICT
-#endif
 
 #include <windows.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
 #include "CRhsSocket.h"
-
-
-//**********************************************************************
-// For 16 bit windows we need a few definitions
-//**********************************************************************
-
-#ifndef WIN32
-
-#ifndef MAKEWORD
-#define MAKEWORD(a, b) ((WORD)(((BYTE)(a)) | ((WORD)((BYTE)(b))) << 8))
-#endif
-
-#ifndef SHORT
-#define SHORT int
-#endif
-
-#endif
 
 
 //**********************************************************************
@@ -56,13 +27,11 @@ CRhsSocket::CRhsSocket()
 
   m_Bound = FALSE;
 
-#ifdef WIN32
   FillMemory(&m_ReadOverlapped, sizeof(m_ReadOverlapped), 0);
   m_ReadOverlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
   FillMemory(&m_WriteOverlapped, sizeof(m_WriteOverlapped), 0);
   m_WriteOverlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-#endif
 
   m_Timeout = INFINITE;
 }
@@ -73,10 +42,8 @@ CRhsSocket::~CRhsSocket()
   if (m_Socket != INVALID_SOCKET)
     closesocket(m_Socket);
 
-#ifdef WIN32
   CloseHandle(m_ReadOverlapped.hEvent);
   CloseHandle(m_WriteOverlapped.hEvent);
-#endif
 }
 
 
@@ -206,11 +173,11 @@ CRhsSocket* CRhsSocket::Accept(char* Peer, int MaxLen)
   if (Peer)
   { peer = inet_ntoa(((struct sockaddr_in*) &accepted->m_PeerAddr)->sin_addr);
     if (peer)
-    { lstrcpyn(Peer, peer, MaxLen);
+    { lstrcpynA(Peer, peer, MaxLen);
       Peer[MaxLen] = '\0';
     }
     else
-    { lstrcpy(Peer, "");
+    { lstrcpyA(Peer, "");
     }
   }
 
@@ -234,10 +201,10 @@ int CRhsSocket::printf(const char* Format, ...)
   char s[0x1000];
 
   va_start(ap, Format);
-  wvsprintf(s, Format, ap);
+  wvsprintfA(s, Format, ap);
   va_end(ap);
 
-  i = WriteTimeout(s, lstrlen(s), 0);
+  i = WriteTimeout(s, (int) lstrlenA(s), 0);
 
   return(i);
 }
@@ -285,7 +252,7 @@ char* CRhsSocket::gets(char* Data, int MaxLen)
 BOOL CRhsSocket::puts(const char* Data)
 { int tosend, sent, retries, i;
 
-  tosend = lstrlen(Data);
+  tosend = (int) lstrlenA(Data);
   sent = retries = 0;
 
   while (tosend > 0)
@@ -533,7 +500,6 @@ int CRhsSocket::ReadTimeout(char* buf, int len, int flags)
 
 // If there is a timeout use overlapped i/o
 
-#ifdef WIN32
   else
   { BOOL b;
 
@@ -551,16 +517,11 @@ int CRhsSocket::ReadTimeout(char* buf, int len, int flags)
         m_LastError = ::GetLastError();
       }
       else
-      { i = lstrlen(buf);
+      { i = (int) lstrlenA(buf);
         m_LastError = 0;
       }
     }
   }
-#else
-  else
-  { i = SOCKET_ERROR;
-  }
-#endif
 
 // All done
 
@@ -590,7 +551,6 @@ int CRhsSocket::WriteTimeout(const char* buf, int len, int flags)
 
 // If there is a timeout use overlapped i/o
 
-#ifdef WIN32
   else
   { BOOL b;
     DWORD d = 0;
@@ -613,11 +573,6 @@ int CRhsSocket::WriteTimeout(const char* buf, int len, int flags)
       }
     }
   }
-#else
-  else
-  { i = SOCKET_ERROR;
-  }
-#endif
 
 // All done
 
@@ -947,7 +902,7 @@ BOOL CRhsSocket::GetPeer(char* Peer, int MaxLen, int* Port)
       return FALSE;
     }
 
-    lstrcpyn(Peer, peer, MaxLen);
+    lstrcpynA(Peer, peer, MaxLen);
     Peer[MaxLen] = '\0';
   }
 
@@ -1010,7 +965,7 @@ BOOL CRhsSocket::GetHost(char* Host, int MaxLen, int* Port)
       return FALSE;
     }
 
-    lstrcpyn(Host, host, MaxLen);
+    lstrcpynA(Host, host, MaxLen);
     Host[MaxLen] = '\0';
   }
 
@@ -1033,100 +988,100 @@ char* CRhsSocket::GetLastErrorMessage(char* Error, int MaxLen)
 
   switch (m_LastError)
   { case 0:
-      lstrcpyn(Error, "No error", MaxLen);
+      lstrcpynA(Error, "No error", MaxLen);
       break;
 
     case WSANOTINITIALISED:
-      lstrcpyn(Error, "A successful WSAStartup must occur before using this function.", MaxLen);
+      lstrcpynA(Error, "A successful WSAStartup must occur before using this function.", MaxLen);
       break;
 
     case WSAENETDOWN:
-      lstrcpyn(Error, "The Windows Sockets implementation has detected that the network subsystem has failed.", MaxLen);
+      lstrcpynA(Error, "The Windows Sockets implementation has detected that the network subsystem has failed.", MaxLen);
       break;
 
     case WSAEADDRINUSE:
-      lstrcpyn(Error, "The specified address is already in use.", MaxLen);
+      lstrcpynA(Error, "The specified address is already in use.", MaxLen);
       break;
 
     case WSAEINTR:
-      lstrcpyn(Error, "The (blocking) call was canceled using WSACancelBlockingCall.", MaxLen);
+      lstrcpynA(Error, "The (blocking) call was canceled using WSACancelBlockingCall.", MaxLen);
       break;
 
     case WSAEINPROGRESS:
-      lstrcpyn(Error, "A blocking Windows Sockets call is in progress.", MaxLen);
+      lstrcpynA(Error, "A blocking Windows Sockets call is in progress.", MaxLen);
       break;
 
     case WSAEADDRNOTAVAIL:
-      lstrcpyn(Error, "The specified address is not available from the local computer.", MaxLen);
+      lstrcpynA(Error, "The specified address is not available from the local computer.", MaxLen);
       break;
 
     case WSAEAFNOSUPPORT:
-      lstrcpyn(Error, "Addresses in the specified family cannot be used with this socket.", MaxLen);
+      lstrcpynA(Error, "Addresses in the specified family cannot be used with this socket.", MaxLen);
       break;
 
     case WSAECONNREFUSED:
-      lstrcpyn(Error, "The attempt to connect was forcefully rejected.", MaxLen);
+      lstrcpynA(Error, "The attempt to connect was forcefully rejected.", MaxLen);
       break;
 
 //    case WSAEDESTADDREQ:
-//      lstrcpyn(Error, "A destination address is required.", MaxLen);
+//      lstrcpynA(Error, "A destination address is required.", MaxLen);
 //      break;
 
     case WSAEFAULT:
-      lstrcpyn(Error, "The namelen argument is incorrect.", MaxLen);
+      lstrcpynA(Error, "The namelen argument is incorrect.", MaxLen);
       break;
 
     case WSAEINVAL:
-      lstrcpyn(Error, "The socket is not already bound to an address.", MaxLen);
+      lstrcpynA(Error, "The socket is not already bound to an address.", MaxLen);
       break;
 
     case WSAEISCONN:
-      lstrcpyn(Error, "The socket is already connected.", MaxLen);
+      lstrcpynA(Error, "The socket is already connected.", MaxLen);
       break;
 
     case WSAENOTCONN:
-      lstrcpyn(Error, "The socket is not connected.", MaxLen);
+      lstrcpynA(Error, "The socket is not connected.", MaxLen);
       break;
 
     case WSAEMFILE:
-      lstrcpyn(Error, "No more file descriptors are available.", MaxLen);
+      lstrcpynA(Error, "No more file descriptors are available.", MaxLen);
       break;
 
     case WSAENETUNREACH:
-      lstrcpyn(Error, "The network can't be reached from this host at this time.", MaxLen);
+      lstrcpynA(Error, "The network can't be reached from this host at this time.", MaxLen);
       break;
 
     case WSAENOBUFS:
-      lstrcpyn(Error, "No buffer space is available. The socket cannot be connected.", MaxLen);
+      lstrcpynA(Error, "No buffer space is available. The socket cannot be connected.", MaxLen);
       break;
 
     case WSAENOTSOCK:
-      lstrcpyn(Error, "The descriptor is not a socket.", MaxLen);
+      lstrcpynA(Error, "The descriptor is not a socket.", MaxLen);
       break;
 
     case WSAETIMEDOUT:
-      lstrcpyn(Error, "Attempt to connect timed out without establishing a connection.", MaxLen);
+      lstrcpynA(Error, "Attempt to connect timed out without establishing a connection.", MaxLen);
       break;
 
     case WSAEWOULDBLOCK :
-      lstrcpyn(Error, "The socket is marked as nonblocking and the connection cannot be completed immediately. It is possible to select the socket while it is connecting by selecting it for writing.", MaxLen);
+      lstrcpynA(Error, "The socket is marked as nonblocking and the connection cannot be completed immediately. It is possible to select the socket while it is connecting by selecting it for writing.", MaxLen);
       break;
 
     case WSAHOST_NOT_FOUND :
-      lstrcpyn(Error, "The host cannot be found.", MaxLen);
+      lstrcpynA(Error, "The host cannot be found.", MaxLen);
       break;
 
     case WSAEACCES :
-      lstrcpyn(Error, "Address/port is already in use.", MaxLen);
+      lstrcpynA(Error, "Address/port is already in use.", MaxLen);
       break;
 
     case 11004:
-      lstrcpyn(Error, "DNS responds: no data record of requested type.", MaxLen);
+      lstrcpynA(Error, "DNS responds: no data record of requested type.", MaxLen);
       break;
 
     default:
-      wsprintf(s, "Unidentified error: %i - %08X", m_LastError, m_LastError);
-      lstrcpyn(Error, s, MaxLen);
+      wsprintfA(s, "Unidentified error: %i - %08X", m_LastError, m_LastError);
+      lstrcpynA(Error, s, MaxLen);
       break;
   }
 

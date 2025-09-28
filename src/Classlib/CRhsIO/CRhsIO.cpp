@@ -11,9 +11,11 @@
 #endif
 
 #include <windows.h>
+#include <windowsx.h>
 #include <richedit.h>
 #include <tlhelp32.h>
 #include <stdio.h>
+#include <shlwapi.h>
 #include <Misc/CRhsRegistry.h>
 #include <Misc/CRhsFont.h>
 #include "CRhsIO.h"
@@ -34,6 +36,14 @@ L"Output is being buffered and can be saved to a file."
 // The edit control is retricted to 1MB to avoid it guzzling all the memory
 
 #define LEN_DISPLAYBUF 1048576
+
+
+//**********************************************************************
+// Non class prototypes
+// --------------------
+//**********************************************************************
+
+int strcmpleft(const WCHAR* s1, const WCHAR* s2);
 
 
 //**********************************************************************
@@ -733,6 +743,14 @@ BOOL CRhsIOWnd::Open(HINSTANCE hInstance, WCHAR* Title, int Left, int Top, int W
 
   FitOnScreen(TRUE, TRUE);
 
+// Create the popup menu
+
+  m_PopMenu = CreatePopupMenu();
+
+  AppendMenu(m_PopMenu, MF_STRING, IDM_POPUP_COPY, L"Copy");
+  AppendMenu(m_PopMenu, MF_STRING, IDM_POPUP_SEARCH, L"Search");
+  AppendMenu(m_PopMenu, MF_STRING, IDM_POPUP_URL, L"Open &URL");
+
 // Save our object in the parent windows extra data
 
   SetWindowLongPtr(m_hWnd, 0, (LONG_PTR) this);
@@ -1064,6 +1082,106 @@ int CRhsIOWnd::ChooseFont(void)
 
 
 //**********************************************************************
+// CRhsIOWnd::WebSearch
+// ----------------------
+// Launch a web search for the selected text
+//**********************************************************************
+
+// We're going to hard code in a maximum length for the search text
+// The text limit is half this value to allow room for URL escaping
+#define MAX_SEARCHLEN 256
+
+void CRhsIOWnd::WebSearch(void)
+{
+  DWORD len_escapedtext = MAX_SEARCHLEN;
+  WCHAR seltext[MAX_SEARCHLEN];
+  WCHAR escapedtext[MAX_SEARCHLEN];
+  WCHAR url[MAX_SEARCHLEN+32];
+
+// Check the length of the selection
+
+  DWORD selstart, selend;
+  SendMessage(m_hEditWnd, EM_GETSEL, (WPARAM) &selstart, (LPARAM) &selend);
+  if (selend == selstart)
+    return;
+  if (selend - selstart > MAX_SEARCHLEN/2)
+  {
+    m_RhsIO->printf(L"The current selection is too large for a web search");
+    return;
+  }
+
+// Get the selected text
+
+  SendMessage(m_hEditWnd, EM_GETSELTEXT, 0, (LPARAM) seltext);
+
+// And we need to escape the text
+
+  if (UrlEscape(seltext, escapedtext, &len_escapedtext, 0) != S_OK)
+  {
+    m_RhsIO->printf(L"The current selection is too large for a web search");
+    return;
+  }
+
+// Set the search URL
+
+  lstrcpy(url, L"https://www.google.com/search?q=");
+  lstrcat(url, escapedtext);
+
+// Use the shell to launch the search
+
+  INT_PTR h = (INT_PTR) ShellExecute(NULL, L"open", url, NULL, NULL, SW_SHOWNORMAL);
+  if (h <= 32)
+  {
+    m_RhsIO->printf(L"The search failed. The following info may be useful for debugging: %x %s\n", h, url);
+    return;
+  }
+}
+
+
+//**********************************************************************
+// CRhsIOWnd::OpenURL
+// --------------------
+// Open the selected text as a URL
+//**********************************************************************
+
+void CRhsIOWnd::OpenURL(void)
+{
+  DWORD len_url = MAX_SEARCHLEN;
+  WCHAR url[MAX_SEARCHLEN];
+
+// Check the length of the selection
+
+  DWORD selstart, selend;
+  SendMessage(m_hEditWnd, EM_GETSEL, (WPARAM) &selstart, (LPARAM) &selend);
+  if (selend == selstart)
+    return;
+  if (selend - selstart > MAX_SEARCHLEN)
+  {
+    m_RhsIO->printf(L"The current selection is too large to open as a URL");
+    return;
+  }
+
+// Get the selected text and check it's a URL
+
+  SendMessage(m_hEditWnd, EM_GETSELTEXT, 0, (LPARAM) url);
+  if (strcmpleft(L"http://", url) != 0 && strcmpleft(L"https://", url) != 0)
+  {
+    m_RhsIO->printf(L"The selected text:\n%s\nis not a URL", url);
+    return;
+  }
+
+// Use the shell to open the URL
+
+  INT_PTR h = (INT_PTR) ShellExecute(NULL, L"open", url, NULL, NULL, SW_SHOWNORMAL);
+  if (h <= 32)
+  {
+    m_RhsIO->printf(L"The search failed. The following info may be useful for debugging: %x %s\n", h, url);
+    return;
+  }
+}
+
+
+//**********************************************************************
 // CRhsIOWnd::OnTimer
 // ------------------
 // Handle WM_TIMER messages
@@ -1283,6 +1401,23 @@ LRESULT CRhsIOWnd::OnCommand(WORD wNotifyCode, WORD wID, HWND hwndCtl)
       ChooseFont();
       return 0;
 
+  // Web search for the text from the edit control
+
+    case IDM_POPUP_SEARCH:
+      WebSearch();
+      return 0;
+
+// Open selected text as a URL
+
+    case IDM_POPUP_URL:
+      OpenURL();
+      return 0;
+
+// Copy text from the edit control
+
+    case IDM_POPUP_COPY:
+      SendMessage(m_hEditWnd, WM_COPY, 0, 0);
+      return 0;
   }
 
   return 0;
@@ -1301,6 +1436,51 @@ LRESULT CRhsIOWnd::OnInitMenuPopup(HMENU hPopup, UINT uPos, BOOL fSystemMenu)
   EnableMenuItem(hPopup, IDM_FILE_KILL, MF_BYCOMMAND | (!m_ThreadComplete && m_hMainThread ? MF_ENABLED : MF_GRAYED));
 
   return 0;
+}
+
+
+//**********************************************************************
+// CRhsIOWnd::OnRightClick
+// -----------------------
+// Display the right click menu
+//**********************************************************************
+
+void CRhsIOWnd::OnRightClick(int x, int y)
+{
+  CHARRANGE r;
+
+// If there is no selection do nothing
+
+  SendMessage(m_hEditWnd, EM_EXGETSEL, 0, (LPARAM) &r);
+  if (r.cpMin != r.cpMax)
+  {
+    POINT p;
+
+// Get the position of the click
+    p.x = x;
+    p.y = y;
+    ClientToScreen(m_hWnd, &p);
+
+// Work out how to align the menu
+
+    UINT flags = 0;
+
+    if (p.x > GetSystemMetrics(SM_CXSCREEN)/2)
+    {
+      flags |= TPM_RIGHTALIGN;
+      p.x += 1;
+    }
+
+    if (p.y > GetSystemMetrics(SM_CYSCREEN)/2)
+    {
+      flags |= TPM_BOTTOMALIGN;
+      p.y += 1;
+    }
+
+// And show the menu
+
+    TrackPopupMenu(m_PopMenu, flags, p.x, p.y, 0, m_hWnd, NULL);
+  }
 }
 
 
@@ -1333,6 +1513,13 @@ LRESULT CRhsIOWnd::OnMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 
     case WM_INITMENUPOPUP:
       return OnInitMenuPopup((HMENU) wParam, (UINT) LOWORD(lParam), (BOOL) HIWORD(lParam));
+
+// Detect a right click in the edit control
+
+    case WM_PARENTNOTIFY:
+      if (LOWORD(wParam) == WM_RBUTTONDOWN)
+        OnRightClick(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+      return 0;
 
 // Timer tick
 
@@ -1424,3 +1611,20 @@ LRESULT CALLBACK CRhsIOWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 }
 
 
+//**********************************************************************
+// strcmpleft
+// ----------
+// Compare s1 with the first len(characters) of s2
+//**********************************************************************
+
+int strcmpleft(const WCHAR* s1, const WCHAR* s2)
+{
+  for (int i = 0; s1[i] != '\0'; i++)
+  {
+    if (s1[i] < s2[i])
+      return -1;
+    else if (s1[i] > s2[i])
+      return 1;
+  }
+  return 0;
+}

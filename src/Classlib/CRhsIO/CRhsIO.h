@@ -97,6 +97,8 @@ class CRhsIOWnd
     BOOL SearchOutput(void);
     long OnSearchMsg(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     int  ChooseFont(void);
+    void WebSearch(void);
+    void OpenURL(void);
     long OnTimer(void);
 
     BOOL FitOnScreen(BOOL Origin, BOOL Size);
@@ -107,6 +109,7 @@ class CRhsIOWnd
 
     LRESULT OnCommand(WORD wNotifyCode, WORD wID, HWND hwndCtl);
     LRESULT OnInitMenuPopup(HMENU hPopup, UINT uPos, BOOL fSystemMenu);
+    void OnRightClick(int x, int y);
     LRESULT OnMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     int  TranslateAccelerator(LPMSG Msg);
 
@@ -127,6 +130,8 @@ class CRhsIOWnd
 
     UINT_PTR m_Timer;
     int  m_TimerCount;
+
+    HMENU m_PopMenu;
 
 #define LEN_SEARCHDLGTEXT 256
     HWND m_hSearchDlg;

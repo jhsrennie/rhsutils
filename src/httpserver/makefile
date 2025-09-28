@@ -13,10 +13,10 @@ link     = link
 
 # Flags
 
-cflags   = -c -W3 -Ox -D_X86_=1 -DWIN32 -I..\Classlib
-lflags   =
-# cflags   = -c -W3 -Od -Zi -D_X86_=1 -DWIN32 -I..\Classlib
-# lflags   = -debug:full -debugtype:cv
+cflags   = -c -W3 -Ox -I..\Classlib
+lflags   = -subsystem:console
+#cflags   = -c -W3 -Od -Zi -fsanitize=address -I..\Classlib
+#lflags   = -subsystem:console -debug:full
 
 # Objects
 

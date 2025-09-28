@@ -16,9 +16,6 @@ Analyse the disk space used within a directory
 diskinfo  
 Display disk and volume info
 
-diskthrasher  
-Disk speed tester but it's obsolete now and is only of historical interest
-
 dosdevice  
 Apps to display, create and delete NT kernel device names. Unlikely to be of interest to anyone sane.
 
@@ -51,9 +48,6 @@ POP3 utility. View and delete messages on a POP3 server.
 
 reconcile  
 Synchronise two directories
-
-reggrep  
-Search the registry for strings using regular expressions
 
 regshowacl  
 Show the ACLs on registry keys

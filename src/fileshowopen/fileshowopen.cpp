@@ -64,7 +64,8 @@ int wmain(int argc, WCHAR* argv[])
 //**********************************************************************
 
 DWORD WINAPI rhsmain(LPVOID unused)
-{ DWORD entries_read, total_entries, resume_handle, files_found, files_closed;
+{ DWORD entries_read, total_entries, files_found, files_closed;
+  DWORD_PTR resume_handle;
   BOOL b_path, b_server, b_user, b_close, b_forcecloseread, b_forcecloseall, b_header;
   FILE_INFO_3* fileinfo;
   WCHAR server[128], path[MAX_PATH+1], user[128], s[256];
@@ -156,16 +157,17 @@ DWORD WINAPI rhsmain(LPVOID unused)
 
 // Now list the open files
 
-  resume_handle = files_found = files_closed = 0;
+  resume_handle = NULL;
+  files_found = files_closed = 0;
 
   for(;;)
   {
 
 // Get the next batch of files
 
-    if (NetFileEnum((LPTSTR) (b_server ? server : NULL),
-                    (LPTSTR) (b_path ? path : NULL),
-                    (LPTSTR) (b_user ? user : NULL),
+    if (NetFileEnum(b_server ? server : NULL,
+                    b_path ? path : NULL,
+                    b_user ? user : NULL,
                     3,
                     (BYTE**) &fileinfo,
                     0x10000,

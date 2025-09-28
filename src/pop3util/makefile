@@ -13,11 +13,10 @@ link     = link
 
 # Flags
 
-cflags   = -c -W3 -Ox -D_X86_=1 -I..\Classlib -DWIN32 -D_CRT_SECURE_NO_WARNINGS
+cflags   = -c -W3 -Ox -I..\Classlib
 lflags   = -subsystem:console
-# -entry:WinMainCRTStartup
-# cflags   = -c -W3 -Od -Zi -D_X86_=1 -DWIN32
-# lflags   = -debug:full -debugtype:cv
+#cflags   = -c -W3 -Od -Zi -fsanitize=address -I..\Classlib
+#lflags   = -subsystem:console -debug:full
 
 # Objects
 

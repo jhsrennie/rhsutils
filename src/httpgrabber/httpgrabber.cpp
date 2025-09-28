@@ -99,8 +99,8 @@ DWORD WINAPI rhsmain(LPVOID unused)
   char *server, *postdata, password[256];
   // Buffers
 #define LEN_BUF 1024
-  WCHAR w[LEN_BUF];
   char s[LEN_BUF];
+  WCHAR w[LEN_BUF+1]; // +1 so it can hold a null terminated string
 
 // Process flags
 
@@ -180,7 +180,7 @@ DWORD WINAPI rhsmain(LPVOID unused)
 
   if (RhsIO.m_argc - argnum >= 5)
   {
-    swprintf(w, 256, L"%s:%s", ARG_USER, ARG_PASS);
+    swprintf(w, LEN_BUF, L"%s:%s", ARG_USER, ARG_PASS);
     Base64Encode(w, password);
     usepassword = TRUE;
   }

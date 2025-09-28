@@ -13,11 +13,10 @@ link     = link
 
 # Flags
 
-cflags   = -c -W3 -Ox -D_X86_=1 -I..\Classlib -DWIN32 -DUNICODE -D_UNICODE
+cflags   = -c -W3 -Ox -I..\Classlib -DUNICODE -D_UNICODE
 lflags   = -subsystem:console
-# -entry:WinMainCRTStartup
-# cflags   = -c -W3 -Od -Zi -D_X86_=1 -DWIN32 -DUNICODE -D_UNICODE
-# lflags   = -debug:full -debugtype:cv
+#cflags   = -c -W3 -Od -Zi -fsanitize=address -I..\Classlib -DUNICODE -D_UNICODE
+#lflags   = -subsystem:console -debug:full
 
 # Objects
 
@@ -26,8 +25,8 @@ objs     = $(projname).obj \
 
 # Libraries
 
-libs     = kernel32.lib user32.lib gdi32.lib \
-           comdlg32.lib shell32.lib advapi32.lib comctl32.lib
+libs     = kernel32.lib user32.lib gdi32.lib comdlg32.lib \
+           shell32.lib advapi32.lib comctl32.lib shlwapi.lib
 
 # Inference rules
 

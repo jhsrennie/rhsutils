@@ -26,8 +26,8 @@ objs     = $(projname).obj CSearchExpr.obj CTextBuffer.obj \
 
 # Libraries
 
-libs     = kernel32.lib user32.lib gdi32.lib \
-           comdlg32.lib shell32.lib advapi32.lib comctl32.lib
+libs     = kernel32.lib user32.lib gdi32.lib comdlg32.lib \
+           shell32.lib advapi32.lib comctl32.lib shlwapi.lib
 
 # Inference rules
 
