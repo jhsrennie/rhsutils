@@ -386,7 +386,7 @@ DWORD WINAPI rhsmain(LPVOID unused)
 BOOL ReconcileUpdateFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINFO* RInfo)
 { DWORD d;
   WCHAR file1[MAX_FILENAMELEN+1], file2[MAX_FILENAMELEN+1], file3[MAX_FILENAMELEN+1];
-  SYSTEMTIME fdate1, fdate2;
+  SYSTEMTIME fcreatedate1, fmoddate1, fcreatedate2, fmoddate2;
   HANDLE h;
   WIN32_FIND_DATA wfd;
 
@@ -460,10 +460,15 @@ BOOL ReconcileUpdateFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINF
             }
           }
 
+          // And recurse to copy the directory contents
           if (!ReconcileUpdateFiles(file1, file2, file3, RInfo))
           { FindClose(h);
             return(FALSE);
           }
+
+          // Finally set the new directory timestamp
+          GetFileTimeByName(file1, &fcreatedate1, NULL, &fmoddate1);
+          SetFileTimeByName(file2, &fcreatedate1, NULL, &fmoddate1);
         }
       }
 
@@ -476,10 +481,10 @@ BOOL ReconcileUpdateFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINF
 // If we are updating check the file timestamps
 
         if (RInfo->Update && d)
-        { GetFileTimeByName(file1, NULL, NULL, &fdate1);
-          GetFileTimeByName(file2, NULL, NULL, &fdate2);
+        { GetFileTimeByName(file1, NULL, NULL, &fmoddate1);
+          GetFileTimeByName(file2, NULL, NULL, &fmoddate2);
 
-          if (ReconcileCompareTime(&fdate1, &fdate2, RInfo->UseFATTimeStamp) <= 0)
+          if (ReconcileCompareTime(&fmoddate1, &fmoddate2, RInfo->UseFATTimeStamp) <= 0)
             continue;
 
           if (!RInfo->Quiet)
@@ -734,7 +739,7 @@ BOOL ReconcileDeleteFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINF
 BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
 { DWORD d;
   WCHAR file1[MAX_FILENAMELEN+1], file2[MAX_FILENAMELEN+1];
-  SYSTEMTIME fdate1, fdate2;
+  SYSTEMTIME fcreatedate1, freaddate1, fmoddate1, fcreatedate2, freaddate2, fmoddate2;
   HANDLE h;
   WIN32_FIND_DATA wfd;
 
@@ -787,14 +792,16 @@ BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
 // Name found is a file
 
       else
-      { GetFileTimeByName(file1, NULL, NULL, &fdate1);
-        GetFileTimeByName(file2, NULL, NULL, &fdate2);
-
-        if (ReconcileCompareTime(&fdate1, &fdate2, RInfo->UseFATTimeStamp) == 0)
+      { GetFileTimeByName(file1, &fcreatedate1, &freaddate1, &fmoddate1);
+        GetFileTimeByName(file2, &fcreatedate2, &freaddate2, &fmoddate2);
+        // Check all the timestamps
+        if (ReconcileCompareTime(&fcreatedate1, &fcreatedate2, RInfo->UseFATTimeStamp) == 0
+         && ReconcileCompareTime(&freaddate1,   &freaddate2,   RInfo->UseFATTimeStamp) == 0
+         && ReconcileCompareTime(&fmoddate1,    &fmoddate2,    RInfo->UseFATTimeStamp) == 0)
           continue;
 
         if (!RInfo->Quiet)
-          RhsIO.printf(L"T %s %s %i/%i/%i %02i:%02i:%02i\r\n", file1, file2, fdate1.wDay, fdate1.wMonth, fdate1.wYear%100, fdate1.wHour, fdate1.wMinute, fdate1.wSecond);
+          RhsIO.printf(L"T %s %s %i/%i/%i %02i:%02i:%02i\r\n", file1, file2, fmoddate1.wDay, fmoddate1.wMonth, fmoddate1.wYear%100, fmoddate1.wHour, fmoddate1.wMinute, fmoddate1.wSecond);
 
         if (!RInfo->Report)
         { // If the destination is read-only we need to make it writeable
@@ -802,7 +809,7 @@ BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
           if (file2attr & FILE_ATTRIBUTE_READONLY)
              SetFileAttributes(file2, 0);
           // Change the timestamp
-          BOOL b = SetFileTimeByName(file2, NULL, NULL, &fdate1);
+          BOOL b = SetFileTimeByName(file2, &fcreatedate1, &freaddate1, &fmoddate1);
           // If the file was read-only change the attributes back
           if (file2attr & FILE_ATTRIBUTE_READONLY)
              SetFileAttributes(file2, file2attr);
@@ -829,6 +836,28 @@ BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
     } while (FindNextFile(h, &wfd));
 
     FindClose(h);
+  }
+
+// And the last step is to check the timestamps for this directory
+
+  GetFileTimeByName(File1, &fcreatedate1, &freaddate1, &fmoddate1);
+  GetFileTimeByName(File2, &fcreatedate2, &freaddate2, &fmoddate2);
+  if (ReconcileCompareTime(&fcreatedate1, &fcreatedate2, RInfo->UseFATTimeStamp) != 0
+   || ReconcileCompareTime(&fmoddate1,    &fmoddate2,    RInfo->UseFATTimeStamp) != 0)
+  {
+    if (!RInfo->Quiet)
+      RhsIO.printf(L"T %s %s %i/%i/%i %02i:%02i:%02i\r\n", File1, File2, fmoddate1.wDay, fmoddate1.wMonth, fmoddate1.wYear%100, fmoddate1.wHour, fmoddate1.wMinute, fmoddate1.wSecond);
+    BOOL b = SetFileTimeByName(File2, &fcreatedate1, &freaddate1, &fmoddate1);
+    // If the timestamp change failed report the error
+    if (b)
+    { RInfo->TimeStamped++;
+    }
+    else
+    { if (!RInfo->Quiet)
+        RhsIO.errprintf(L"E Cannot timestamp %s to match %s: %s\r\n", File2, File1, GetLastErrorMessage());
+      if (RInfo->FailOnError)
+        return(FALSE);
+    }
   }
 
 // All done so return
@@ -1013,7 +1042,7 @@ BOOL GetFileTimeByName(const WCHAR* FileName, SYSTEMTIME* Created, SYSTEMTIME* A
   HANDLE h;
   FILETIME created, accessed, written;
 
-  h = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  h = CreateFile(FileName, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
   if (!h)
     return(FALSE);
@@ -1052,7 +1081,7 @@ BOOL SetFileTimeByName(const WCHAR* FileName, SYSTEMTIME* Created, SYSTEMTIME* A
   FILETIME created, accessed, written;
   LPFILETIME lpcreated = NULL, lpaccessed = NULL, lpwritten = NULL;
 
-  h = CreateFile(FileName, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  h = CreateFile(FileName, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
   if (!h)
     return(FALSE);

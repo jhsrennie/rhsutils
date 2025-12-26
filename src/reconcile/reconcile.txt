@@ -91,6 +91,20 @@ or
 for drive letter and UNC names respectively. Using this syntax for
 the file names bypasses the 256 character limit on file names.
 
+File/directory timestamps
+-------------------------
+
+NTFS maintains three timestamps for files, a modified time, created
+time and last accessed time. The -u option uses the modified time to
+decide whether to copy a file i.e. if the modified time in the
+destination is older than the source then the file will be copied.
+
+When a file is copied the modified time is set to match the source, but
+the created time is left as the time the destination file was created
+because, well, this is the time the destination was created. If you
+want to change the created time to match the source use the -t option
+as this changes both the created and modified times.
+
 Changes
 -------
 
