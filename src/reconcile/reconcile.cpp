@@ -120,7 +120,7 @@ CRhsIO RhsIO;
 #define LEN_HELP 37
 static const WCHAR* HELP[LEN_HELP] =
 {
-  L"Reconcile v1.0.3\r\n",
+  L"Reconcile v1.0.4\r\n",
   L"----------------\r\n",
   L"Reconcile is a program to keep the contents of two drives and/or\r\n",
   L"directories the same.  The syntax is:\r\n",
