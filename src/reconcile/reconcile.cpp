@@ -17,7 +17,9 @@
 // -d: Any files on the destination but not on the source are deleted.
 //
 // -t: Time stamps of destation files are changed to match the times of
-//     the source files.
+//     the source files. If only -t is given then only the modified
+//     time is checked/changed. If -ta is given the created time is
+//     also checked/changed.
 //
 // -a: Destination files are moved to an archive before being overwritten
 //     or deleted.
@@ -62,7 +64,7 @@ typedef struct
   BOOL Update,
        Create,
        Delete,
-       TimeStamp,
+       TimeStamp, TimeStampAll,
        Archive,
        Quiet,
        Report,
@@ -117,10 +119,10 @@ CRhsIO RhsIO;
   L"reconcile [-x -u -d -t -a<archive> -q -r -e -f] <source> <dest>\r\n"
 
 
-#define LEN_HELP 37
+#define LEN_HELP 39
 static const WCHAR* HELP[LEN_HELP] =
 {
-  L"Reconcile v1.0.4\r\n",
+  L"Reconcile v1.0.5\r\n",
   L"----------------\r\n",
   L"Reconcile is a program to keep the contents of two drives and/or\r\n",
   L"directories the same.  The syntax is:\r\n",
@@ -137,7 +139,9 @@ static const WCHAR* HELP[LEN_HELP] =
   L"-d: Any files on the destination but not on the source are deleted.\r\n",
   L"\r\n",
   L"-t: Time stamps of destation files are changed to match the times of\r\n",
-  L"    the source files.\r\n",
+  L"    the source files. If only -t is given then only the modified time\r\n",
+  L"    is checked/changed. If -ta is given the created time is also \r\n",
+  L"    checked/changed.\r\n",
   L"\r\n",
   L"-a: Destination files are moved to an archive before being overwritten\r\n",
   L"    or deleted.\r\n",
@@ -196,6 +200,7 @@ DWORD WINAPI rhsmain(LPVOID unused)
   ri.Create          = FALSE;
   ri.Delete          = FALSE;
   ri.TimeStamp       = FALSE;
+  ri.TimeStampAll    = FALSE;
   ri.Archive         = FALSE;
   ri.Quiet           = FALSE;
   ri.Report          = FALSE;
@@ -208,7 +213,7 @@ DWORD WINAPI rhsmain(LPVOID unused)
   { if (RhsIO.m_argv[argnum][0] != '-')
       break;
 
-    CharUpperBuff(RhsIO.m_argv[argnum]+1, 1);
+    CharUpper(RhsIO.m_argv[argnum] + 1);
 
     switch (RhsIO.m_argv[argnum][1])
     { case '?':
@@ -230,6 +235,8 @@ DWORD WINAPI rhsmain(LPVOID unused)
 
       case 'T':
         ri.TimeStamp = TRUE;
+        if (RhsIO.m_argv[argnum][2] == 'A')
+          ri.TimeStampAll = TRUE;
         break;
 
       case 'A':
@@ -386,7 +393,7 @@ DWORD WINAPI rhsmain(LPVOID unused)
 BOOL ReconcileUpdateFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINFO* RInfo)
 { DWORD d;
   WCHAR file1[MAX_FILENAMELEN+1], file2[MAX_FILENAMELEN+1], file3[MAX_FILENAMELEN+1];
-  SYSTEMTIME fcreatedate1, fmoddate1, fcreatedate2, fmoddate2;
+  SYSTEMTIME fcreatedate1, fmoddate1, fmoddate2;
   HANDLE h;
   WIN32_FIND_DATA wfd;
 
@@ -458,6 +465,11 @@ BOOL ReconcileUpdateFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINF
               { continue;
               }
             }
+            // If we created the directory set its timestamp now
+            else
+            { GetFileTimeByName(file1, &fcreatedate1, NULL, &fmoddate1);
+              SetFileTimeByName(file2, &fcreatedate1, NULL, &fmoddate1);
+            }
           }
 
           // And recurse to copy the directory contents
@@ -465,10 +477,6 @@ BOOL ReconcileUpdateFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINF
           { FindClose(h);
             return(FALSE);
           }
-
-          // Finally set the new directory timestamp
-          GetFileTimeByName(file1, &fcreatedate1, NULL, &fmoddate1);
-          SetFileTimeByName(file2, &fcreatedate1, NULL, &fmoddate1);
         }
       }
 
@@ -733,13 +741,15 @@ BOOL ReconcileDeleteFiles(WCHAR* File1, WCHAR* File2, WCHAR* File3, RECONCILEINF
 // ReconcileTimeStampFiles
 // -----------------------
 // Update the timestamps of files in the destination to match the
-// source
+// source.
+// If RInfo->TimeStampAll is set this will update all three times. If it
+// is not set only the modified time will be set.
 //**********************************************************************
 
 BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
 { DWORD d;
   WCHAR file1[MAX_FILENAMELEN+1], file2[MAX_FILENAMELEN+1];
-  SYSTEMTIME fcreatedate1, freaddate1, fmoddate1, fcreatedate2, freaddate2, fmoddate2;
+  SYSTEMTIME fcreatedate1, fmoddate1, fcreatedate2, fmoddate2;
   HANDLE h;
   WIN32_FIND_DATA wfd;
 
@@ -792,14 +802,22 @@ BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
 // Name found is a file
 
       else
-      { GetFileTimeByName(file1, &fcreatedate1, &freaddate1, &fmoddate1);
-        GetFileTimeByName(file2, &fcreatedate2, &freaddate2, &fmoddate2);
-        // Check all the timestamps
-        if (ReconcileCompareTime(&fcreatedate1, &fcreatedate2, RInfo->UseFATTimeStamp) == 0
-         && ReconcileCompareTime(&freaddate1,   &freaddate2,   RInfo->UseFATTimeStamp) == 0
-         && ReconcileCompareTime(&fmoddate1,    &fmoddate2,    RInfo->UseFATTimeStamp) == 0)
+      { GetFileTimeByName(file1, &fcreatedate1, NULL, &fmoddate1);
+        GetFileTimeByName(file2, &fcreatedate2, NULL, &fmoddate2);
+
+        // Check the timestamps
+        BOOL timediff = FALSE;
+        if (ReconcileCompareTime(&fmoddate1, &fmoddate2, RInfo->UseFATTimeStamp) != 0)
+        { timediff = TRUE;
+        }
+        else if (RInfo->TimeStampAll)
+        { if (ReconcileCompareTime(&fcreatedate1, &fcreatedate2, RInfo->UseFATTimeStamp) != 0)
+            timediff = TRUE;
+        }
+        if (!timediff)
           continue;
 
+        // If we reached here the timestamps differ
         if (!RInfo->Quiet)
           RhsIO.printf(L"T %s %s %i/%i/%i %02i:%02i:%02i\r\n", file1, file2, fmoddate1.wDay, fmoddate1.wMonth, fmoddate1.wYear%100, fmoddate1.wHour, fmoddate1.wMinute, fmoddate1.wSecond);
 
@@ -808,12 +826,19 @@ BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
           DWORD file2attr = GetFileAttributes(file2);
           if (file2attr & FILE_ATTRIBUTE_READONLY)
              SetFileAttributes(file2, 0);
+
           // Change the timestamp
-          BOOL b = SetFileTimeByName(file2, &fcreatedate1, &freaddate1, &fmoddate1);
+          BOOL b;
+          if (RInfo->TimeStampAll)
+            b = SetFileTimeByName(file2, &fcreatedate1, NULL, &fmoddate1);
+          else
+            b = SetFileTimeByName(file2, NULL, NULL, &fmoddate1);
+
           // If the file was read-only change the attributes back
           if (file2attr & FILE_ATTRIBUTE_READONLY)
-             SetFileAttributes(file2, file2attr);
-          // If the timestamp change failed report thw error
+            SetFileAttributes(file2, file2attr);
+
+          // If the timestamp change failed report the error
           if (!b)
           { if (!RInfo->Quiet)
               RhsIO.errprintf(L"E Cannot timestamp %s to match %s: %s\r\n", file2, file1, GetLastErrorMessage());
@@ -840,23 +865,24 @@ BOOL ReconcileTimeStampFiles(WCHAR* File1, WCHAR* File2, RECONCILEINFO* RInfo)
 
 // And the last step is to check the timestamps for this directory
 
-  GetFileTimeByName(File1, &fcreatedate1, &freaddate1, &fmoddate1);
-  GetFileTimeByName(File2, &fcreatedate2, &freaddate2, &fmoddate2);
+  GetFileTimeByName(File1, &fcreatedate1, NULL, &fmoddate1);
+  GetFileTimeByName(File2, &fcreatedate2, NULL, &fmoddate2);
   if (ReconcileCompareTime(&fcreatedate1, &fcreatedate2, RInfo->UseFATTimeStamp) != 0
    || ReconcileCompareTime(&fmoddate1,    &fmoddate2,    RInfo->UseFATTimeStamp) != 0)
   {
-    if (!RInfo->Quiet)
-      RhsIO.printf(L"T %s %s %i/%i/%i %02i:%02i:%02i\r\n", File1, File2, fmoddate1.wDay, fmoddate1.wMonth, fmoddate1.wYear%100, fmoddate1.wHour, fmoddate1.wMinute, fmoddate1.wSecond);
-    BOOL b = SetFileTimeByName(File2, &fcreatedate1, &freaddate1, &fmoddate1);
-    // If the timestamp change failed report the error
-    if (b)
-    { RInfo->TimeStamped++;
-    }
-    else
-    { if (!RInfo->Quiet)
-        RhsIO.errprintf(L"E Cannot timestamp %s to match %s: %s\r\n", File2, File1, GetLastErrorMessage());
-      if (RInfo->FailOnError)
-        return(FALSE);
+    if (!RInfo->Report)
+    { RhsIO.printf(L"T %s %s %i/%i/%i %02i:%02i:%02i\r\n", File1, File2, fmoddate1.wDay, fmoddate1.wMonth, fmoddate1.wYear%100, fmoddate1.wHour, fmoddate1.wMinute, fmoddate1.wSecond);
+      BOOL b = SetFileTimeByName(File2, &fcreatedate1, NULL, &fmoddate1);
+      // If the timestamp change failed report the error
+      if (b)
+      { RInfo->TimeStamped++;
+      }
+      else
+      { if (!RInfo->Quiet)
+          RhsIO.errprintf(L"E Cannot timestamp %s to match %s: %s\r\n", File2, File1, GetLastErrorMessage());
+        if (RInfo->FailOnError)
+          return(FALSE);
+      }
     }
   }
 

@@ -15,8 +15,10 @@ reconcile [-x -u -d -t -q -r -e -f -a<dir>] <source> <dest>
 
 -d: Any files on the destination but not on the source are deleted.
 
--t: Time stamps of destation files are changed to match the times of
-    the source files.
+-t: Time stamps of destination files are changed to match the times of
+    the source files. If only -t is given then only the modified time
+    is checked/changed. If -ta is given the created time is also
+    checked/changed.
 
 -q: Suppress listing of operations
 
@@ -102,7 +104,7 @@ destination is older than the source then the file will be copied.
 When a file is copied the modified time is set to match the source, but
 the created time is left as the time the destination file was created
 because, well, this is the time the destination was created. If you
-want to change the created time to match the source use the -t option
+want to change the created time to match the source use the -ta option
 as this changes both the created and modified times.
 
 Changes
