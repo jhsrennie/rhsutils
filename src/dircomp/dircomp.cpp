@@ -35,17 +35,17 @@ int g_NumCompared = 0;
 int g_NumDiffs = 0;
 
 BOOL g_SubDir = FALSE;
-int g_Verbose = 1;
+int g_Verbose = 0;
 
 
 #define SYNTAX \
-L"dircomp v1.0\n" \
-L"------------\n" \
+L"dircomp v1.0.2\n" \
+L"--------------\n" \
 L"dircomp [-d -v0/1/2] <source dir> <destination dir>\n" \
 L"\n" \
 L"Compare two directories\n" \
 L" -d  recurse into subdirectories\r\n" \
-L" -v0 don't print file or directory names\n" \
+L" -v0 don't print file or directory names (default)\n" \
 L" -v1 print directory names (default)\n" \
 L" -v2 print file names\n"
 
